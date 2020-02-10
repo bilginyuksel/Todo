@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface TodoRepository extends JpaRepository<Todo, Integer> {
 
@@ -17,4 +18,8 @@ public interface TodoRepository extends JpaRepository<Todo, Integer> {
 
     List<Todo> findAllByUser(User user);
     List<Todo> findAllByUserAndCategory(User user, Category category);
+
+    void deleteTodoByIdAndUser(Integer id, User user);
+
+    Optional<Todo> findTodoByIdAndUser(Integer id, User user);
 }

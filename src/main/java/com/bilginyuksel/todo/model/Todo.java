@@ -2,9 +2,10 @@ package com.bilginyuksel.todo.model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
-public class Todo {
+public class Todo implements UrlGenerator{
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -14,8 +15,6 @@ public class Todo {
     private String content;
     private boolean done;
     private Date createDate, lastUpdateDate;
-
-    private String url; // localhost:8080/tod/share-{userId}/tod-details-{todId}...
 
     @OneToOne
     private Category category;
@@ -81,12 +80,12 @@ public class Todo {
         return lastUpdateDate;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public Category getCategory() {
         return category;
     }
 
+    @Override
+    public String generateUrl() {
+       return UUID.randomUUID().toString();
+    }
 }

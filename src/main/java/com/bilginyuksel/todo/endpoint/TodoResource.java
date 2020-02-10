@@ -1,10 +1,13 @@
 package com.bilginyuksel.todo.endpoint;
 
 import com.bilginyuksel.todo.exception.UserAuthenticationTokenException;
+import com.bilginyuksel.todo.model.ShareTodo;
 import com.bilginyuksel.todo.model.Todo;
 import com.bilginyuksel.todo.model.User;
 import com.bilginyuksel.todo.repository.CategoryRepository;
+import com.bilginyuksel.todo.repository.ShareTodoRepository;
 import com.bilginyuksel.todo.repository.TodoRepository;
+import com.bilginyuksel.todo.repository.UserRepository;
 import com.bilginyuksel.todo.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
@@ -13,21 +16,24 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("api/todo")
 public class TodoResource {
 
+
+    @Autowired
+    private ShareTodoRepository shareTodoRepository;
     @Autowired
     private AuthenticationService authenticationService;
-
     @Autowired
     private TodoRepository todoRepository;
-
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/todo")
     public Todo insertTodo(@RequestHeader String Authorization,
@@ -62,7 +68,7 @@ public class TodoResource {
             User user = authenticationService.findAlreadyLoggedUser(Authorization);
             // Check this user's permission and if you approve continue process.
 
-            Optional<Todo> optionalTodo = todoRepository.findById(todoId);
+            Optional<Todo> optionalTodo = todoRepository.findTodoByIdAndUser(todoId, user);
             if(optionalTodo.isPresent()){
                 Todo todo = optionalTodo.get();
                 todo.setLastUpdateDate(new Date());
@@ -78,7 +84,7 @@ public class TodoResource {
 
         } catch (UserAuthenticationTokenException e) {
             e.printStackTrace();
-            return "Wrong user informations.";
+            return "Wrong user credentials.";
         }
 
     }
@@ -87,12 +93,17 @@ public class TodoResource {
     @DeleteMapping("/todo")
     public String deleteTodo(@RequestHeader String Authorization,
                              @RequestParam Integer todoId){
-        // Here i am not checking anything but we should check permission's.
-        // This todo is this users todo;
-        // Actually maybe it doesn't try to match todos.
-        boolean isAuthenticated  =  authenticationService.isAuthenticated(Authorization);
-        todoRepository.deleteById(todoId);
-        return null;
+
+        try {
+            User user = authenticationService.findAlreadyLoggedUser(Authorization);
+            todoRepository.deleteTodoByIdAndUser(todoId, user);
+            return "Todo Deleted Successfully!";
+        } catch (UserAuthenticationTokenException e) {
+            e.printStackTrace();
+            return "Something went wrong with the authentication !";
+        }
+
+
     }
 
     @GetMapping("/todos")
@@ -113,12 +124,12 @@ public class TodoResource {
     {
         try {
             User user = authenticationService.findAlreadyLoggedUser(Authorization);
-            Todo todo = todoRepository.findById(todoId).get();
-            // if(!(todo.getUser() == user)) return null;
+            Optional<Todo> optionalTodo = todoRepository.findTodoByIdAndUser(todoId, user);
 
-            // not send whole user info to client.
-            // maybe this can be done. but i don't like the way that role's seeing on the client.
-            return todo;
+            if(!optionalTodo.isPresent()) return null;
+
+            // You can check user's permission here.
+            return optionalTodo.get();
 
         } catch (UserAuthenticationTokenException e) {
             e.printStackTrace();
@@ -139,6 +150,60 @@ public class TodoResource {
             e.printStackTrace();
         }
 
+        return null;
+    }
+
+
+    @PostMapping("/share-todo")
+    public String createSharedTodoUrl(@RequestHeader String Authorization,
+                                      @RequestParam Integer todoId,
+                                      @RequestParam Integer userId){
+
+
+
+        try{
+            // Find authorized user's todos and share with the mentioned user.
+            User user = authenticationService.findAlreadyLoggedUser(Authorization);
+            Optional<Todo> optionalTodo = todoRepository.findTodoByIdAndUser(todoId, user);
+
+            if(!optionalTodo.isPresent()) return "Todo can't found.";
+
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if(!optionalUser.isPresent()) return "No user to share.";
+
+            ShareTodo shareTodo = new ShareTodo(optionalUser.get(), optionalTodo.get());
+            shareTodo.setUrl(optionalTodo.get().generateUrl());
+            shareTodoRepository.save(shareTodo);
+
+            return shareTodo.getUrl();
+
+
+        }catch (UserAuthenticationTokenException e){
+            e.printStackTrace();
+            return "User Authentication went wrong.";
+        }
+
+    }
+
+    // Shared todos source
+    // Make custom this thing.
+    @GetMapping("/share-{token}")
+    public Todo getSharedTodoSource(@RequestHeader String Authorization,
+                                 @PathVariable String token){
+
+        try{
+            User user = authenticationService.findAlreadyLoggedUser(Authorization);
+            // Match this user with the token owner
+            Optional<ShareTodo> optionalShareTodo = shareTodoRepository.findShareTodoByToken(token);
+
+            if(!optionalShareTodo.isPresent()) return null;
+            ShareTodo shareTodo = optionalShareTodo.get();
+            if (shareTodo.getSharedTo() == user) return shareTodo.getTodo();
+            return null; // Throw you're not authorized for that action.
+
+        }catch (UserAuthenticationTokenException e){
+            e.printStackTrace();
+        }
         return null;
     }
 }

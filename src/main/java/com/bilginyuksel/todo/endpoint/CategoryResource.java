@@ -1,7 +1,6 @@
 package com.bilginyuksel.todo.endpoint;
 
 import com.bilginyuksel.todo.exception.UserAuthenticationTokenException;
-import com.bilginyuksel.todo.exception.UserNoAuthenticationToken;
 import com.bilginyuksel.todo.model.Category;
 import com.bilginyuksel.todo.model.User;
 import com.bilginyuksel.todo.repository.CategoryRepository;
