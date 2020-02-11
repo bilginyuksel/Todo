@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     private OAuthRepository authRepository;
 
     @Override
-    public OAuth login(String username, String password) throws UserLoginException {
+    public String login(String username, String password) throws UserLoginException {
 
         Optional<User> optionalUser = userRepository.findUserByUsername(username);
 
@@ -38,11 +38,11 @@ public class UserServiceImpl implements UserService {
         // Or print a message u're already logged in.
         Optional<OAuth> optionalOAuth = authRepository.findOAuthByUserAndEnabled(user, true);
         if(optionalOAuth.isPresent() && optionalOAuth.get().isEnabled() /*also date check*/)
-            return optionalOAuth.get();
+            return optionalOAuth.get().getToken();
 
         OAuth token = authenticationService.createAuthenticationTokenToUser(optionalUser.get());
 
-        return token;
+        return token.getToken();
     }
 
 
@@ -54,9 +54,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(String username, String password, String email) {
-        User user = new User(username, password, email);
-        userRepository.save(user);
 
-        return user;
+        Optional<User> optionalUserUsername = userRepository.findUserByUsername(username);
+        Optional<User> optionalUserEmail = userRepository.findUserByEmail(email);
+        if(!optionalUserEmail.isPresent() && !optionalUserUsername.isPresent()){
+            User user = new User(username, password, email);
+            userRepository.save(user);
+            return user;
+        }
+
+        return null;
     }
 }

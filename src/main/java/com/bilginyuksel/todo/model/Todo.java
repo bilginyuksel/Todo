@@ -19,6 +19,7 @@ public class Todo implements UrlGenerator{
     @OneToOne
     private Category category;
 
+
     @OneToOne
     private User user;
 

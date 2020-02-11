@@ -23,18 +23,13 @@ import java.util.Optional;
 @RequestMapping("api/todo")
 public class TodoResource {
 
+    @Autowired private ShareTodoRepository shareTodoRepository;
+    @Autowired private AuthenticationService authenticationService;
+    @Autowired private TodoRepository todoRepository;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private UserRepository userRepository;
 
-    @Autowired
-    private ShareTodoRepository shareTodoRepository;
-    @Autowired
-    private AuthenticationService authenticationService;
-    @Autowired
-    private TodoRepository todoRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private UserRepository userRepository;
-
+    
     @PostMapping("/todo")
     public Todo insertTodo(@RequestHeader String Authorization,
                            @RequestParam(defaultValue = "-") String title,
@@ -77,7 +72,7 @@ public class TodoResource {
                 if(!categoryId.equals("aosd*11239asdnadsnf1")) todo.setCategory(categoryRepository.findById(Integer.parseInt(categoryId)).get());
                 // do this for category.
                 todoRepository.save(todo);
-                return "Successfully Completed !";
+                return "Successfully Completed!";
             }else return "Todo not found!";
 
 

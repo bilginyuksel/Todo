@@ -18,8 +18,6 @@ public interface TodoRepository extends JpaRepository<Todo, Integer> {
 
     List<Todo> findAllByUser(User user);
     List<Todo> findAllByUserAndCategory(User user, Category category);
-
     void deleteTodoByIdAndUser(Integer id, User user);
-
     Optional<Todo> findTodoByIdAndUser(Integer id, User user);
 }

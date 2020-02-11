@@ -15,10 +15,8 @@ import java.util.List;
 @RequestMapping("api/category")
 public class CategoryResource {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
-    @Autowired
-    private AuthenticationService authenticationService;
+    @Autowired private CategoryRepository categoryRepository;
+    @Autowired private AuthenticationService authenticationService;
 
     @PostMapping("/category")
     public Category createCategory(@RequestHeader String Authorization,

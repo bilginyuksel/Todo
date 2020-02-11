@@ -20,24 +20,17 @@ import java.util.Optional;
 public class UserResource {
 
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private AuthenticationService authenticationService;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
+    @Autowired private UserService userService;
+    @Autowired private AuthenticationService authenticationService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private RoleRepository roleRepository;
 
 
     @PostMapping("/login")
     public String login(@RequestParam String username, @RequestParam String password){
         try{
-            OAuth token = userService.login(username, password);
-            return "Login Successfull!\n"+token.toString();
+            String token = userService.login(username, password);
+            return "Login Successfull!\n"+token;
         }catch (UserLoginException u){
             return "Username or password wrong!\n"+u.getMessage();
         }
