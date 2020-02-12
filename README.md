@@ -1,5 +1,10 @@
 <h1>Todo</h1>
 
+I created todo app REST service. I tried to create my own security on that service. I didn't use spring security. I added safe share for todos.
+And i wrote bunch of tests.
+<br>
+I mentioned some of the api calls of that application below.
+
 <strong>POST</strong> localhost:8080/api/user/register?username=bilginyuksel&password=123456&email=email@email.com
 ```shell
 >> curl --location --request POST 'localhost:8080/api/user/register?username=bayro&password=123456&email=bayro@email.com'
