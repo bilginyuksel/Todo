@@ -14,7 +14,8 @@ public interface OAuthRepository extends JpaRepository<OAuth, Integer> {
     Optional<OAuth> findByToken(String token);
 
     @Modifying
-    @Query("update OAuth o set o.enabled=false where o.token=?1")
+    @Query("update OAuth set enabled = false where token = ?1")
+    // @Query("update OAuth o set o.enabled=false where o.token=?1")
     void setOAuthEnabledFalseByToken(String token);
 
     Optional<OAuth> findOAuthByUserAndEnabled(User user, boolean enabled);
